@@ -191,51 +191,58 @@ def show_practice():
     with col1:
         st.markdown("#### 단계 1️⃣: 십의 자리 계산")
         st.write(f"**{tens * 10}** × {num2} = ?")
-        ans1 = st.number_input("십의 자리 결과:", min_value=0, max_value=9999, key=f"ans1_{st.session_state.current_problem}")
-        
-        if st.button("✓ 다음", key="next1"):
-            if ans1 == tens * 10 * num2:
-                st.session_state.answers[0] = ans1
-                st.session_state.current_stage = 1
-                st.rerun()
-            else:
-                st.error(f"❌ 오답이에요! {tens * 10} × {num2} = {tens * 10 * num2}를 다시 확인해보세요.")
+        with st.form(key=f"form_stage0_{st.session_state.current_problem}"):
+            ans1 = st.number_input("십의 자리 결과:", min_value=0, max_value=9999, key=f"ans1_{st.session_state.current_problem}")
+            submit1 = st.form_submit_button("✓ 다음")
+            if submit1:
+                if ans1 == tens * 10 * num2:
+                    st.session_state.answers[0] = ans1
+                    st.session_state.current_stage = 1
+                    st.rerun()
+                else:
+                    st.error(f"❌ 오답이에요! {tens * 10} × {num2} = {tens * 10 * num2}를 다시 확인해보세요.")
     
     if st.session_state.current_stage >= 1:
         with col2:
             st.markdown("#### 단계 2️⃣: 일의 자리 계산")
             st.write(f"**{ones}** × {num2} = ?")
-            ans2 = st.number_input("일의 자리 결과:", min_value=0, max_value=999, key=f"ans2_{st.session_state.current_problem}")
-            
-            if st.button("✓ 다음", key="next2"):
-                if ans2 == ones * num2:
-                    st.session_state.answers[1] = ans2
-                    st.session_state.current_stage = 2
-                    st.rerun()
-                else:
-                    st.error(f"❌ 오답이에요! {ones} × {num2} = {ones * num2}를 다시 확인해보세요.")
+            with st.form(key=f"form_stage1_{st.session_state.current_problem}"):
+                ans2 = st.number_input("일의 자리 결과:", min_value=0, max_value=999, key=f"ans2_{st.session_state.current_problem}")
+                submit2 = st.form_submit_button("✓ 다음")
+                if submit2:
+                    if ans2 == ones * num2:
+                        st.session_state.answers[1] = ans2
+                        st.session_state.current_stage = 2
+                        st.rerun()
+                    else:
+                        st.error(f"❌ 오답이에요! {ones} × {num2} = {ones * num2}를 다시 확인해보세요.")
     
     if st.session_state.current_stage >= 2:
         with col3:
             st.markdown("#### 단계 3️⃣: 최종 답")
             result = num1 * num2
             st.write(f"**{tens * 10 * num2}** + **{ones * num2}** = ?")
-            ans3 = st.number_input("최종 답:", min_value=0, max_value=9999, key=f"ans3_{st.session_state.current_problem}")
-            
-            if st.button("✓ 완료", key="complete"):
-                if ans3 == result:
-                    st.session_state.answers[2] = ans3
-                    st.session_state.scores.append(True)
-                    st.success("🎉 정답이에요! 정말 잘했어요!")
-                    st.balloons()
-                else:
-                    st.session_state.scores.append(False)
-                    st.error(f"❌ 오답이에요! 정답은 {result}입니다.")
-                
-                if st.button("➡️ 다음 문제", key="next_problem"):
+            with st.form(key=f"form_stage2_{st.session_state.current_problem}"):
+                ans3 = st.number_input("최종 답:", min_value=0, max_value=9999, key=f"ans3_{st.session_state.current_problem}")
+                submit3 = st.form_submit_button("✓ 완료")
+                if submit3:
+                    if ans3 == result:
+                        st.session_state.answers[2] = ans3
+                        st.session_state.scores.append(True)
+                        st.success("🎉 정답이에요! 정말 잘했어요!")
+                        st.balloons()
+                    else:
+                        st.session_state.scores.append(False)
+                        st.error(f"❌ 오답이에요! 정답은 {result}입니다.")
+                    
                     st.session_state.current_problem += 1
                     st.session_state.current_stage = 0
                     st.session_state.answers = [None, None, None]
+                    
+                    # 모든 문제를 풀었으면 결과 화면으로 이동
+                    if st.session_state.current_problem >= len(st.session_state.problems):
+                        st.session_state.page = "result"
+                    
                     st.rerun()
 
 def show_result():
@@ -276,7 +283,7 @@ def show_result():
     col1, col2 = st.columns(2)
     
     with col1:
-        if st.button("🔄 다시 풀기", use_container_width=True):
+        if st.button("🔄 다시 풀기", use_container_width=True, key="retry_btn"):
             st.session_state.current_problem = 0
             st.session_state.current_stage = 0
             st.session_state.answers = [None, None, None]
@@ -286,7 +293,7 @@ def show_result():
             st.rerun()
     
     with col2:
-        if st.button("🏠 홈으로 돌아가기", use_container_width=True):
+        if st.button("🏠 홈으로 돌아가기", use_container_width=True, key="home_btn"):
             st.session_state.page = "home"
             st.session_state.difficulty = None
             st.session_state.current_problem = 0
